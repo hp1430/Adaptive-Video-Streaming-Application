@@ -25,7 +25,7 @@ const uploadVideoController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
     const videoPath = req.file.path; // Path to uploaded video
     const outputPath = `output/${Date.now()}`; // Unique output directory
-    (0, video_service_1.processVideoForHls)(videoPath, outputPath, (error, masterPlaylist) => {
+    (0, video_service_1.processVideoForHls)(videoPath, outputPath, (error, _) => {
         if (error) {
             res.status(500).json({
                 success: false,
@@ -41,11 +41,10 @@ const uploadVideoController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.error("Error deleting original video file:", unlinkError);
         }
         // Respond with success and master playlist
-        res.status(200).json({
-            success: true,
-            message: "Video processed successfully",
-            data: `/${masterPlaylist}`,
-        });
+    });
+    res.status(200).json({
+        success: true,
+        message: "Video processed successfully"
     });
 });
 exports.uploadVideoController = uploadVideoController;

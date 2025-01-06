@@ -14,7 +14,7 @@ export const uploadVideoController = async (req: Request, res: Response) => {
   const videoPath = req.file.path; // Path to uploaded video
   const outputPath = `output/${Date.now()}`; // Unique output directory
 
-  processVideoForHls(videoPath, outputPath, (error, masterPlaylist) => {
+  processVideoForHls(videoPath, outputPath, (error, _) => {
     if (error) {
       res.status(500).json({
         success: false,
@@ -31,10 +31,9 @@ export const uploadVideoController = async (req: Request, res: Response) => {
     }
 
     // Respond with success and master playlist
-    res.status(200).json({
-      success: true,
-      message: "Video processed successfully",
-      data: `/${masterPlaylist}`,
-    });
+  });
+  res.status(200).json({
+    success: true,
+    message: "Video processed successfully"
   });
 };

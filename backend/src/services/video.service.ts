@@ -1,5 +1,6 @@
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
+import { createMovie, updateMovieStatus } from '../repositories/movie.repository';
 
 interface Resolution {
     width: number;
@@ -17,7 +18,10 @@ const resolutions: Resolution[] = [
 export const processVideoForHls = (
     inputPath: string, 
     outputPath: string, 
-    callback: (error: Error | null, masterPlaylist: string) => void) : void => {
+    callback: (error: Error | null, masterPlayList?: string) => void) : void => {
+
+        createMovie(outputPath);
+
         fs.mkdirSync(outputPath, { recursive: true });    // create output directory
 
         const masterPlaylist = `${outputPath}/master.m3u8`; // master playlist path
@@ -27,6 +31,8 @@ export const processVideoForHls = (
         let countProcessing = 0;
 
         resolutions.forEach((resolution) => {
+
+            console.log(`Processing Video for resolution: ${resolution.height}p`);
 
             const variantOutput = `${outputPath}/${resolution.height}p`;  // variant output path
 
@@ -47,10 +53,8 @@ export const processVideoForHls = (
                 .output(variantPlaylist)      // output to the variant playlist file
                 .on('end', () => {
                     // when the processing ends, add the variant playlist to the master playlist
-                    masterContent.push(`
-                        #EXT-X-STREAM-INF: BANDWIDTH=${resolution.bitRate*1000}, 
-                        RESOLUTION=${resolution.width}x${resolution.height}\n
-                        ${resolution.height}p/playlist.m3u8`
+                    masterContent.push(
+                        `#EXT-X-STREAM-INF:BANDWIDTH=${resolution.bitRate*1000},RESOLUTION=${resolution.width}x${resolution.height}\n${resolution.height}p/playlist.m3u8`
                     );
                     countProcessing += 1;
 
@@ -59,6 +63,9 @@ export const processVideoForHls = (
                         console.log(masterContent)
                         // when all resolutions are processed, write the master playlist
                         fs.writeFileSync(masterPlaylist, `#EXTM3U\n${masterContent.join('\n')}`);   // write the master playlist
+
+                        updateMovieStatus(outputPath, "COMPLETED");
+
                         callback(null, masterPlaylist); // call the callback with the master playlist path
                     }
                 })
