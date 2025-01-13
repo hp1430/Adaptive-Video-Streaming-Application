@@ -24,3 +24,13 @@ export const updateMovieStatus = async (movieId: string, status: string) => {
 
     return response;
 }
+
+export const getCompletedMovies = async () => {
+    const response = await prisma.movie.findMany({
+        select: {
+            movieId: true
+        }
+    });
+    console.log(response);
+    return response;
+}

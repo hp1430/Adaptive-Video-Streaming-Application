@@ -20,37 +20,39 @@ const processVideoForHls = (inputPath, outputPath, callback) => {
     const masterContent = []; // master playlist content
     let countProcessing = 0;
     resolutions.forEach((resolution) => {
-        console.log(`Processing Video for resolution: ${resolution.height}p`);
+        console.log(`Processing video for resolution: ${resolution.width}x${resolution.height}`);
         const variantOutput = `${outputPath}/${resolution.height}p`; // variant output path
         const variantPlaylist = `${variantOutput}/playlist.m3u8`; // variant playlist path
         fs_1.default.mkdirSync(variantOutput, { recursive: true }); // create variant output directory
+        //fs.writeFileSync(masterPlaylist, `#EXTM3U\n`);
         (0, fluent_ffmpeg_1.default)(inputPath)
             .outputOptions([
             `-vf scale=w=${resolution.width}:h=${resolution.height}`,
             `-b:v ${resolution.bitRate}k`,
-            `-codec:v libx264`,
-            `-codec:a aac`,
-            `-hls_time 10`,
-            `-hls_playlist_type vod`,
+            '-codec:v libx264',
+            '-codec:a aac',
+            '-hls_time 10',
+            '-hls_playlist_type vod',
             `-hls_segment_filename ${variantOutput}/segment%03d.ts`
         ])
             .output(variantPlaylist) // output to the variant playlist file
             .on('end', () => {
             // when the processing ends, add the variant playlist to the master playlist
-            masterContent.push(`#EXT-X-STREAM-INF:BANDWIDTH=${resolution.bitRate * 1000},RESOLUTION=${resolution.width}x${resolution.height}\n${resolution.height}p/playlist.m3u8`);
+            // fs.appendFileSync(masterPlaylist, `#EXT-X-STREAM-INF:BANDWIDTH=${resolution.bitRate*1000},RESOLUTION=${resolution.width}x${resolution.height}\n${resolution.height}p/playlist.m3u8\n`)
+            masterContent.push(`#EXT-X-STREAM-INF:BANDWIDTH=${(resolution.bitRate + 128) * 1.25 * 1000},RESOLUTION=${resolution.width}x${resolution.height}\n${resolution.height}p/playlist.m3u8`);
             countProcessing += 1;
             if (countProcessing === resolutions.length) {
                 console.log('All resolutions processed');
                 console.log(masterContent);
                 // when all resolutions are processed, write the master playlist
-                fs_1.default.writeFileSync(masterPlaylist, `#EXTM3U\n${masterContent.join('\n')}`); // write the master playlist
+                fs_1.default.writeFileSync(masterPlaylist, `#EXTM3U\n${masterContent.join('\n')}`);
                 (0, movie_repository_1.updateMovieStatus)(outputPath, "COMPLETED");
                 callback(null, masterPlaylist); // call the callback with the master playlist path
             }
         })
             .on('error', (error) => {
             console.log('Error processing video', error);
-            callback(error, masterPlaylist); // call the callback with the error
+            callback(error); // call the callback with the error
         })
             .run();
     });

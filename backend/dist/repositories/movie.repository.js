@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateMovieStatus = exports.createMovie = void 0;
+exports.getCompletedMovies = exports.updateMovieStatus = exports.createMovie = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createMovie = (movieId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -34,3 +34,13 @@ const updateMovieStatus = (movieId, status) => __awaiter(void 0, void 0, void 0,
     return response;
 });
 exports.updateMovieStatus = updateMovieStatus;
+const getCompletedMovies = () => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield prisma.movie.findMany({
+        select: {
+            movieId: true
+        }
+    });
+    console.log(response);
+    return response;
+});
+exports.getCompletedMovies = getCompletedMovies;
