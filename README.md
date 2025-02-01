@@ -37,7 +37,7 @@ Follow these steps to set up the project locally:
      ```
 
 3. **Start the Server**
-   ###backend
+   ### backend
    ```
    cd backend
    npm run dev
@@ -48,5 +48,5 @@ Follow these steps to set up the project locally:
    npm run dev
    ```
 
-4. **Access the Application**
+5. **Access the Application**
    Open your browser and visit http://localhost:3000/videoUpload
